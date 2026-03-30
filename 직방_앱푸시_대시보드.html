@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>직방 CRM 앱푸시 대시보드 2026 1Q</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1f2d45;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --accent3: #f59e0b;
+    --accent4: #10b981;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --ansim: #3b82f6;
+    --reco: #f59e0b;
+    --schedule: #10b981;
+    --subs: #a78bfa;
+    --red: #ef4444;
+    --radius: 14px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 28px 24px; }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-badge {
+    background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #fff;
+  }
+  .header h1 { font-size: 20px; font-weight: 700; color: var(--text); }
+  .header-sub { font-size: 12px; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .period-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 5px;
+    width: fit-content;
+  }
+  .tab {
+    padding: 8px 22px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Pretendard', sans-serif;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.35);
+  }
+  .tab:hover:not(.active) { color: var(--text); background: var(--surface2); }
+
+  /* TAB PANELS */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* KPI ROW */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .kpi-card:hover { border-color: #2d4a70; transform: translateY(-1px); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+  }
+  .kpi-card.blue::before { background: linear-gradient(90deg, #3b82f6, #0ea5e9); }
+  .kpi-card.amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .kpi-card.green::before { background: linear-gradient(90deg, #10b981, #34d399); }
+  .kpi-card.purple::before { background: linear-gradient(90deg, #a78bfa, #c4b5fd); }
+  .kpi-label { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+  .kpi-val { font-size: 28px; font-weight: 800; color: var(--text); font-family: 'DM Mono', monospace; letter-spacing: -0.02em; }
+  .kpi-unit { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-left: 2px; }
+  .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+  /* CAT BADGES */
+  .cat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .cat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .cat-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .cat-name { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; flex: 1; }
+  .cat-stats { text-align: right; }
+  .cat-click { font-size: 18px; font-weight: 800; font-family: 'DM Mono', monospace; }
+  .cat-send { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* CHART GRID */
+  .chart-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-full { margin-bottom: 16px; }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+  }
+  .chart-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .chart-card-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .chart-wrap { position: relative; }
+
+  /* TABLE */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .data-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid rgba(31,45,69,0.5);
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(59,130,246,0.04); }
+  .data-table .highlight { color: var(--text); font-weight: 600; }
+  .data-table .good { color: #34d399; }
+  .data-table .bad { color: #f87171; }
+
+  /* BAR MINI */
+  .bar-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bar-bg {
+    flex: 1;
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill { height: 100%; border-radius: 3px; }
+
+  /* category legend */
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--text-dim); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Section title */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* date range selector */
+  .range-btns { display: flex; gap: 6px; margin-bottom: 16px; }
+  .range-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Pretendard', sans-serif;
+    transition: all 0.15s;
+  }
+  .range-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .range-btn:hover:not(.active) { color: var(--text); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-badge">ZIGBANG</div>
+      <div>
+        <div class="header h1" style="font-size:20px;font-weight:700;">CRM 앱푸시 대시보드</div>
+        <div class="header-sub">직방전체 · 푸시 기준 (대체 제외) · 소계 기준</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="period-badge">2026.01.01 — 03.29</div>
+      <div class="period-badge" style="color:var(--accent2);">1분기</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('daily')">📅 일간</button>
+    <button class="tab" onclick="switchTab('weekly')">📆 주간</button>
+    <button class="tab" onclick="switchTab('quarterly')">📊 1분기</button>
+  </div>
+
+  <!-- ==================== 일간 탭 ==================== -->
+  <div id="tab-daily" class="tab-panel active">
+
+    <div class="section-title">전체 KPI · 1Q 누적</div>
+    <div class="kpi-grid" id="kpi-daily"></div>
+
+    <div class="section-title">카테고리별 성과 · 1Q 전체</div>
+    <div class="cat-row" id="cat-daily"></div>
+
+    <div class="section-title">일간 트렌드</div>
+    <div class="range-btns">
+      <button class="range-btn active" onclick="setDailyRange(7,this)">최근 7일</button>
+      <button class="range-btn" onclick="setDailyRange(14,this)">최근 14일</button>
+      <button class="range-btn" onclick="setDailyRange(30,this)">최근 30일</button>
+      <button class="range-btn" onclick="setDailyRange(88,this)">전체</button>
+    </div>
+
+    <div class="chart-full chart-card">
+      <div class="chart-card-title">발송(유저) 일간 추이</div>
+      <div class="chart-card-sub">카테고리별 발송 유저 수</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--ansim)"></div>ansim</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--reco)"></div>reco</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--schedule)"></div>schedule</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--subs)"></div>subs</div>
+      </div>
+      <div class="chart-wrap" style="height:240px"><canvas id="chart-daily-send"></canvas></div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-card-title">발송율(유저) 일간</div>
+        <div class="chart-card-sub">대상 대비 발송 유저 비율</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-daily-sendrate"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">클릭율(유저) 일간</div>
+        <div class="chart-card-sub">발송 유저 대비 클릭 유저 비율</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-daily-clickrate"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-title">일간 상세 데이터 · 최근 20일</div>
+    <div class="chart-card">
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="table-daily">
+          <thead>
+            <tr>
+              <th>날짜</th>
+              <th>대상(유저)</th>
+              <th>발송(건)</th>
+              <th>발송(유저)</th>
+              <th>발송율</th>
+              <th>클릭(건)</th>
+              <th>클릭(유저)</th>
+              <th>클릭율</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-daily"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 주간 탭 ==================== -->
+  <div id="tab-weekly" class="tab-panel">
+    <div class="section-title">주간 KPI</div>
+    <div class="kpi-grid" id="kpi-weekly"></div>
+
+    <div class="chart-full chart-card">
+      <div class="chart-card-title">주간 발송(유저) 추이</div>
+      <div class="chart-card-sub">주차별 카테고리 발송 유저 수</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--ansim)"></div>ansim</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--reco)"></div>reco</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--schedule)"></div>schedule</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--subs)"></div>subs</div>
+      </div>
+      <div class="chart-wrap" style="height:240px"><canvas id="chart-weekly-send"></canvas></div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-card-title">주간 발송율(%)</div>
+        <div class="chart-card-sub">대상 대비 발송 유저 비율</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-weekly-sendrate"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">주간 클릭율(%)</div>
+        <div class="chart-card-sub">발송 유저 대비 클릭 유저 비율</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-weekly-clickrate"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-title">주간 상세 데이터</div>
+    <div class="chart-card">
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>주차</th>
+              <th>대상(유저)</th>
+              <th>발송(건)</th>
+              <th>발송(유저)</th>
+              <th>발송율</th>
+              <th>클릭(건)</th>
+              <th>클릭(유저)</th>
+              <th>클릭율</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-weekly"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 1분기 탭 ==================== -->
+  <div id="tab-quarterly" class="tab-panel">
+    <div class="section-title">1분기 KPI · 월별 비교</div>
+    <div class="kpi-grid" id="kpi-quarterly"></div>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-card-title">월별 발송(건) · 카테고리</div>
+        <div class="chart-card-sub">카테고리별 월별 발송건 비교</div>
+        <div class="chart-wrap" style="height:240px"><canvas id="chart-q-send-cat"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">월별 클릭(유저) · 카테고리</div>
+        <div class="chart-card-sub">카테고리별 월별 클릭 유저 비교</div>
+        <div class="chart-wrap" style="height:240px"><canvas id="chart-q-click-cat"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-grid-3">
+      <div class="chart-card">
+        <div class="chart-card-title">카테고리 발송 비중</div>
+        <div class="chart-card-sub">1Q 전체 발송건 기준</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-q-pie-send"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">발송율 · 월별</div>
+        <div class="chart-card-sub">대상 대비 발송 유저 비율</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-q-sendrate"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">클릭율 · 카테고리별</div>
+        <div class="chart-card-sub">발송 유저 대비 클릭 유저 1Q</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-q-clickrate-cat"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-title">1분기 월별 상세</div>
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-card-title">월별 통합 수치</div>
+        <div class="chart-card-sub">전체 합산</div>
+        <table class="data-table">
+          <thead><tr><th>월</th><th>대상</th><th>발송(건)</th><th>발송율</th><th>클릭(유저)</th><th>클릭율</th></tr></thead>
+          <tbody id="tbody-quarterly"></tbody>
+        </table>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">카테고리별 클릭율 상세</div>
+        <div class="chart-card-sub">월별 카테고리 클릭율</div>
+        <table class="data-table">
+          <thead><tr><th>월</th><th>카테고리</th><th>발송(유저)</th><th>클릭율</th><th>발송율</th></tr></thead>
+          <tbody id="tbody-quarterly-cat"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ========== DATA ==========
+const RAW = {
+  daily_total: [{"date":"2026-01-01","발송건":2295374.0,"발송유저":1882719.0,"클릭건":30058.0,"클릭유저":27631.0,"대상":2282272.0,"발송율":82.5,"클릭율":1.5,"date_str":"01/01"},{"date":"2026-01-02","발송건":1675399.0,"발송유저":1300868.0,"클릭건":27107.0,"클릭유저":24888.0,"대상":1601318.0,"발송율":81.2,"클릭율":1.9,"date_str":"01/02"},{"date":"2026-01-03","발송건":617375.0,"발송유저":388422.0,"클릭건":27876.0,"클릭유저":25455.0,"대상":677858.0,"발송율":57.3,"클릭율":6.6,"date_str":"01/03"},{"date":"2026-01-04","발송건":630518.0,"발송유저":398474.0,"클릭건":31146.0,"클릭유저":28481.0,"대상":696306.0,"발송율":57.2,"클릭율":7.1,"date_str":"01/04"},{"date":"2026-01-05","발송건":649707.0,"발송유저":410232.0,"클릭건":27631.0,"클릭유저":25374.0,"대상":714066.0,"발송율":57.5,"클릭율":6.2,"date_str":"01/05"},{"date":"2026-01-06","발송건":686609.0,"발송유저":440560.0,"클릭건":30041.0,"클릭유저":27761.0,"대상":755934.0,"발송율":58.3,"클릭율":6.3,"date_str":"01/06"},{"date":"2026-01-07","발송건":1727335.0,"발송유저":1025788.0,"클릭건":36347.0,"클릭유저":32758.0,"대상":1332670.0,"발송율":77.0,"클릭율":3.2,"date_str":"01/07"},{"date":"2026-01-08","발송건":2299521.0,"발송유저":1872145.0,"클릭건":27683.0,"클릭유저":25211.0,"대상":2272289.0,"발송율":82.4,"클릭율":1.3,"date_str":"01/08"},{"date":"2026-01-09","발송건":1728370.0,"발송유저":1331352.0,"클릭건":27853.0,"클릭유저":25611.0,"대상":1654008.0,"발송율":80.5,"클릭율":1.9,"date_str":"01/09"},{"date":"2026-01-10","발송건":667487.0,"발송유저":418983.0,"클릭건":27259.0,"클릭유저":25125.0,"대상":727179.0,"발송율":57.6,"클릭율":6.0,"date_str":"01/10"},{"date":"2026-01-11","발송건":640178.0,"발송유저":402619.0,"클릭건":29476.0,"클릭유저":27007.0,"대상":698924.0,"발송율":57.6,"클릭율":6.7,"date_str":"01/11"},{"date":"2026-01-12","발송건":664613.0,"발송유저":418399.0,"클릭건":28906.0,"클릭유저":26658.0,"대상":726016.0,"발송율":57.6,"클릭율":6.4,"date_str":"01/12"},{"date":"2026-01-13","발송건":695014.0,"발송유저":443839.0,"클릭건":32249.0,"클릭유저":29843.0,"대상":762050.0,"발송율":58.2,"클릭율":6.7,"date_str":"01/13"},{"date":"2026-01-14","발송건":1741286.0,"발송유저":1041680.0,"클릭건":38756.0,"클릭유저":35082.0,"대상":1349174.0,"발송율":77.2,"클릭율":3.4,"date_str":"01/14"},{"date":"2026-01-15","발송건":2314197.0,"발송유저":1882523.0,"클릭건":27777.0,"클릭유저":25265.0,"대상":2280337.0,"발송율":82.6,"클릭율":1.3,"date_str":"01/15"},{"date":"2026-01-16","발송건":1741419.0,"발송유저":1344027.0,"클릭건":29115.0,"클릭유저":26669.0,"대상":1672196.0,"발송율":80.4,"클릭율":2.0,"date_str":"01/16"},{"date":"2026-01-17","발송건":666785.0,"발송유저":418693.0,"클릭건":30119.0,"클릭유저":27754.0,"대상":727316.0,"발송율":57.6,"클릭율":6.6,"date_str":"01/17"},{"date":"2026-01-18","발송건":642736.0,"발송유저":404105.0,"클릭건":30476.0,"클릭유저":28012.0,"대상":702278.0,"발송율":57.5,"클릭율":6.9,"date_str":"01/18"},{"date":"2026-01-19","발송건":664456.0,"발송유저":416947.0,"클릭건":29432.0,"클릭유저":27050.0,"대상":724714.0,"발송율":57.5,"클릭율":6.5,"date_str":"01/19"},{"date":"2026-01-20","발송건":693083.0,"발송유저":442469.0,"클릭건":31696.0,"클릭유저":29286.0,"대상":761278.0,"발송율":58.1,"클릭율":6.6,"date_str":"01/20"},{"date":"2026-01-21","발송건":1742875.0,"발송유저":1040820.0,"클릭건":36878.0,"클릭유저":33467.0,"대상":1352256.0,"발송율":77.0,"클릭율":3.2,"date_str":"01/21"},{"date":"2026-01-22","발송건":2323034.0,"발송유저":1890406.0,"클릭건":29148.0,"클릭유저":26461.0,"대상":2290785.0,"발송율":82.5,"클릭율":1.4,"date_str":"01/22"},{"date":"2026-01-23","발송건":1748256.0,"발송유저":1349226.0,"클릭건":29107.0,"클릭유저":26779.0,"대상":1677946.0,"발송율":80.4,"클릭율":2.0,"date_str":"01/23"},{"date":"2026-01-24","발송건":676929.0,"발송유저":424897.0,"클릭건":29497.0,"클릭유저":27051.0,"대상":737879.0,"발송율":57.6,"클릭율":6.4,"date_str":"01/24"},{"date":"2026-01-25","발송건":644760.0,"발송유저":404856.0,"클릭건":29252.0,"클릭유저":26889.0,"대상":703920.0,"발송율":57.5,"클릭율":6.6,"date_str":"01/25"},{"date":"2026-01-26","발송건":664278.0,"발송유저":416929.0,"클릭건":28875.0,"클릭유저":26503.0,"대상":725154.0,"발송율":57.5,"클릭율":6.4,"date_str":"01/26"},{"date":"2026-01-27","발송건":691960.0,"발송유저":441487.0,"클릭건":30124.0,"클릭유저":27760.0,"대상":760454.0,"발송율":58.1,"클릭율":6.3,"date_str":"01/27"},{"date":"2026-01-28","발송건":1751175.0,"발송유저":1044624.0,"클릭건":36087.0,"클릭유저":32691.0,"대상":1354890.0,"발송율":77.1,"클릭율":3.1,"date_str":"01/28"},{"date":"2026-01-29","발송건":2323985.0,"발송유저":1888573.0,"클릭건":29413.0,"클릭유저":26729.0,"대상":2289419.0,"발송율":82.5,"클릭율":1.4,"date_str":"01/29"},{"date":"2026-01-30","발송건":1739960.0,"발송유저":1344568.0,"클릭건":28082.0,"클릭유저":25643.0,"대상":1671558.0,"발송율":80.4,"클릭율":1.9,"date_str":"01/30"},{"date":"2026-01-31","발송건":670073.0,"발송유저":420749.0,"클릭건":27837.0,"클릭유저":25561.0,"대상":731104.0,"발송율":57.5,"클릭율":6.1,"date_str":"01/31"},{"date":"2026-02-01","발송건":643994.0,"발송유저":404784.0,"클릭건":31116.0,"클릭유저":28601.0,"대상":703346.0,"발송율":57.6,"클릭율":7.1,"date_str":"02/01"},{"date":"2026-02-02","발송건":663895.0,"발송유저":415914.0,"클릭건":28705.0,"클릭유저":26307.0,"대상":724434.0,"발송율":57.4,"클릭율":6.3,"date_str":"02/02"},{"date":"2026-02-03","발송건":697086.0,"발송유저":447049.0,"클릭건":30785.0,"클릭유저":28460.0,"대상":765174.0,"발송율":58.4,"클릭율":6.4,"date_str":"02/03"},{"date":"2026-02-04","발송건":1754834.0,"발송유저":1046782.0,"클릭건":36617.0,"클릭유저":33299.0,"대상":1360268.0,"발송율":77.0,"클릭율":3.2,"date_str":"02/04"},{"date":"2026-02-05","발송건":2330095.0,"발송유저":1892408.0,"클릭건":27983.0,"클릭유저":25441.0,"대상":2297117.0,"발송율":82.4,"클릭율":1.3,"date_str":"02/05"},{"date":"2026-02-06","발송건":1735984.0,"발송유저":1347620.0,"클릭건":28110.0,"클릭유저":25777.0,"대상":1667948.0,"발송율":80.8,"클릭율":1.9,"date_str":"02/06"},{"date":"2026-02-07","발송건":661703.0,"발송유저":415394.0,"클릭건":28879.0,"클릭유저":26540.0,"대상":723087.0,"발송율":57.4,"클릭율":6.4,"date_str":"02/07"},{"date":"2026-02-08","발송건":647972.0,"발송유저":405970.0,"클릭건":31051.0,"클릭유저":28609.0,"대상":706408.0,"발송율":57.5,"클릭율":7.1,"date_str":"02/08"},{"date":"2026-02-09","발송건":666780.0,"발송유저":416764.0,"클릭건":27935.0,"클릭유저":25685.0,"대상":727120.0,"발송율":57.3,"클릭율":6.2,"date_str":"02/09"},{"date":"2026-02-10","발송건":698073.0,"발송유저":448175.0,"클릭건":31046.0,"클릭유저":28633.0,"대상":766600.0,"발송율":58.5,"클릭율":6.4,"date_str":"02/10"},{"date":"2026-02-11","발송건":1770396.0,"발송유저":1059516.0,"클릭건":38079.0,"클릭유저":34644.0,"대상":1371752.0,"발송율":77.2,"클릭율":3.3,"date_str":"02/11"},{"date":"2026-02-12","발송건":2330028.0,"발송유저":1888965.0,"클릭건":27854.0,"클릭유저":25282.0,"대상":2294399.0,"발송율":82.3,"클릭율":1.3,"date_str":"02/12"},{"date":"2026-02-13","발송건":1740726.0,"발송유저":1349673.0,"클릭건":29037.0,"클릭유저":26607.0,"대상":1673006.0,"발송율":80.7,"클릭율":2.0,"date_str":"02/13"},{"date":"2026-02-14","발송건":672004.0,"발송유저":422481.0,"클릭건":29811.0,"클릭유저":27327.0,"대상":732939.0,"발송율":57.6,"클릭율":6.5,"date_str":"02/14"},{"date":"2026-02-15","발송건":641616.0,"발송유저":402685.0,"클릭건":30777.0,"클릭유저":28285.0,"대상":700975.0,"발송율":57.4,"클릭율":7.0,"date_str":"02/15"},{"date":"2026-02-16","발송건":662068.0,"발송유저":415281.0,"클릭건":28956.0,"클릭유저":26580.0,"대상":722858.0,"발송율":57.5,"클릭율":6.4,"date_str":"02/16"},{"date":"2026-02-17","발송건":695007.0,"발송유저":445185.0,"클릭건":31478.0,"클릭유저":29011.0,"대상":762753.0,"발송율":58.4,"클릭율":6.5,"date_str":"02/17"},{"date":"2026-02-18","발송건":1749516.0,"발송유저":1047068.0,"클릭건":37924.0,"클릭유저":34371.0,"대상":1356060.0,"발송율":77.2,"클릭율":3.3,"date_str":"02/18"},{"date":"2026-02-19","발송건":2311700.0,"발송유저":1881001.0,"클릭건":28017.0,"클릭유저":25553.0,"대상":2279499.0,"발송율":82.5,"클릭율":1.4,"date_str":"02/19"},{"date":"2026-02-20","발송건":1742695.0,"발송유저":1353007.0,"클릭건":28289.0,"클릭유저":26015.0,"대상":1674721.0,"발송율":80.8,"클릭율":1.9,"date_str":"02/20"},{"date":"2026-02-21","발송건":667699.0,"발송유저":418682.0,"클릭건":28613.0,"클릭유저":26314.0,"대상":728473.0,"발송율":57.5,"클릭율":6.3,"date_str":"02/21"},{"date":"2026-02-22","발송건":643680.0,"발송유저":404202.0,"클릭건":29637.0,"클릭유저":27268.0,"대상":703018.0,"발송율":57.5,"클릭율":6.7,"date_str":"02/22"},{"date":"2026-02-23","발송건":662673.0,"발송유저":415567.0,"클릭건":28001.0,"클릭유저":25748.0,"대상":722993.0,"발송율":57.5,"클릭율":6.2,"date_str":"02/23"},{"date":"2026-02-24","발송건":693044.0,"발송유저":443620.0,"클릭건":29913.0,"클릭유저":27577.0,"대상":762023.0,"발송율":58.2,"클릭율":6.2,"date_str":"02/24"},{"date":"2026-02-25","발송건":1757695.0,"발송유저":1050447.0,"클릭건":36762.0,"클릭유저":33325.0,"대상":1362386.0,"발송율":77.1,"클릭율":3.2,"date_str":"02/25"},{"date":"2026-02-26","발송건":2314009.0,"발송유저":1880093.0,"클릭건":27993.0,"클릭유저":25431.0,"대상":2279629.0,"발송율":82.5,"클릭율":1.4,"date_str":"02/26"},{"date":"2026-02-27","발송건":1741028.0,"발송유저":1349337.0,"클릭건":28249.0,"클릭유저":25895.0,"대상":1672462.0,"발송율":80.7,"클릭율":1.9,"date_str":"02/27"},{"date":"2026-02-28","발송건":682014.0,"발송유저":436819.0,"클릭건":27636.0,"클릭유저":25243.0,"대상":744162.0,"발송율":58.7,"클릭율":5.8,"date_str":"02/28"},{"date":"2026-03-01","발송건":673707.0,"발송유저":430721.0,"클릭건":29314.0,"클릭유저":26836.0,"대상":737978.0,"발송율":58.4,"클릭율":6.2,"date_str":"03/01"},{"date":"2026-03-02","발송건":684248.0,"발송유저":441601.0,"클릭건":30923.0,"클릭유저":28441.0,"대상":749003.0,"발송율":59.0,"클릭율":6.4,"date_str":"03/02"},{"date":"2026-03-03","발송건":668913.0,"발송유저":430904.0,"클릭건":26826.0,"클릭유저":24534.0,"대상":735424.0,"발송율":58.6,"클릭율":5.7,"date_str":"03/03"},{"date":"2026-03-04","발송건":1766915.0,"발송유저":1045934.0,"클릭건":48272.0,"클릭유저":43656.0,"대상":1356202.0,"발송율":77.1,"클릭율":4.2,"date_str":"03/04"},{"date":"2026-03-05","발송건":2311238.0,"발송유저":1888338.0,"클릭건":28047.0,"클릭유저":25653.0,"대상":2285800.0,"발송율":82.6,"클릭율":1.4,"date_str":"03/05"},{"date":"2026-03-06","발송건":1738246.0,"발송유저":1356946.0,"클릭건":26779.0,"클릭유저":24538.0,"대상":1669780.0,"발송율":81.3,"클릭율":1.8,"date_str":"03/06"},{"date":"2026-03-07","발송건":676092.0,"발송유저":435289.0,"클릭건":28497.0,"클릭유저":26172.0,"대상":737925.0,"발송율":59.0,"클릭율":6.0,"date_str":"03/07"},{"date":"2026-03-08","발송건":653846.0,"발송유저":416598.0,"클릭건":29719.0,"클릭유저":27052.0,"대상":714058.0,"발송율":58.3,"클릭율":6.5,"date_str":"03/08"},{"date":"2026-03-09","발송건":673102.0,"발송유저":429960.0,"클릭건":26733.0,"클릭유저":24503.0,"대상":734203.0,"발송율":58.6,"클릭율":5.7,"date_str":"03/09"},{"date":"2026-03-10","발송건":656241.0,"발송유저":419805.0,"클릭건":26674.0,"클릭유저":24469.0,"대상":718858.0,"발송율":58.4,"클릭율":5.8,"date_str":"03/10"},{"date":"2026-03-11","발송건":1755004.0,"발송유저":1035686.0,"클릭건":49007.0,"클릭유저":44346.0,"대상":1343160.0,"발송율":77.1,"클릭율":4.3,"date_str":"03/11"},{"date":"2026-03-12","발송건":2295375.0,"발송유저":1876666.0,"클릭건":28935.0,"클릭유저":26400.0,"대상":2270843.0,"발송율":82.6,"클릭율":1.4,"date_str":"03/12"},{"date":"2026-03-13","발송건":1746801.0,"발송유저":1365990.0,"클릭건":26763.0,"클릭유저":24517.0,"대상":1674822.0,"발송율":81.6,"클릭율":1.8,"date_str":"03/13"},{"date":"2026-03-14","발송건":643030.0,"발송유저":410452.0,"클릭건":26004.0,"클릭유저":23730.0,"대상":699242.0,"발송율":58.7,"클릭율":5.8,"date_str":"03/14"},{"date":"2026-03-15","발송건":640580.0,"발송유저":408165.0,"클릭건":29166.0,"클릭유저":26587.0,"대상":699256.0,"발송율":58.4,"클릭율":6.5,"date_str":"03/15"},{"date":"2026-03-16","발송건":659547.0,"발송유저":421526.0,"클릭건":26937.0,"클릭유저":24587.0,"대상":718991.0,"발송율":58.6,"클릭율":5.8,"date_str":"03/16"},{"date":"2026-03-17","발송건":654231.0,"발송유저":421623.0,"클릭건":27606.0,"클릭유저":25298.0,"대상":721800.0,"발송율":58.4,"클릭율":6.0,"date_str":"03/17"},{"date":"2026-03-18","발송건":1733868.0,"발송유저":1027064.0,"클릭건":48051.0,"클릭유저":43348.0,"대상":1327743.0,"발송율":77.4,"클릭율":4.2,"date_str":"03/18"},{"date":"2026-03-19","발송건":2284189.0,"발송유저":1868041.0,"클릭건":26878.0,"클릭유저":24518.0,"대상":2260753.0,"발송율":82.6,"클릭율":1.3,"date_str":"03/19"},{"date":"2026-03-20","발송건":1728451.0,"발송유저":1347827.0,"클릭건":26059.0,"클릭유저":23839.0,"대상":1659977.0,"발송율":81.2,"클릭율":1.8,"date_str":"03/20"},{"date":"2026-03-21","발송건":661600.0,"발송유저":421897.0,"클릭건":26556.0,"클릭유저":24313.0,"대상":722037.0,"발송율":58.4,"클릭율":5.8,"date_str":"03/21"},{"date":"2026-03-22","발송건":641706.0,"발송유저":406994.0,"클릭건":28108.0,"클릭유저":25638.0,"대상":700900.0,"발송율":58.1,"클릭율":6.3,"date_str":"03/22"},{"date":"2026-03-23","발송건":659819.0,"발송유저":419523.0,"클릭건":25793.0,"클릭유저":23582.0,"대상":719470.0,"발송율":58.3,"클릭율":5.6,"date_str":"03/23"},{"date":"2026-03-24","발송건":693052.0,"발송유저":443831.0,"클릭건":27561.0,"클릭유저":25209.0,"대상":753580.0,"발송율":58.9,"클릭율":5.7,"date_str":"03/24"},{"date":"2026-03-25","발송건":1734580.0,"발송유저":1025703.0,"클릭건":47086.0,"클릭유저":42452.0,"대상":1322785.0,"발송율":77.5,"클릭율":4.1,"date_str":"03/25"},{"date":"2026-03-26","발송건":2284781.0,"발송유저":1869386.0,"클릭건":26831.0,"클릭유저":24563.0,"대상":2258760.0,"발송율":82.8,"클릭율":1.3,"date_str":"03/26"},{"date":"2026-03-27","발송건":1727289.0,"발송유저":1344814.0,"클릭건":25792.0,"클릭유저":23529.0,"대상":1657413.0,"발송율":81.1,"클릭율":1.7,"date_str":"03/27"},{"date":"2026-03-28","발송건":661604.0,"발송유저":420705.0,"클릭건":26030.0,"클릭유저":23905.0,"대상":720887.0,"발송율":58.4,"클릭율":5.7,"date_str":"03/28"},{"date":"2026-03-29","발송건":561211.0,"발송유저":556138.0,"클릭건":26067.0,"클릭유저":23966.0,"대상":555156.0,"발송율":100.2,"클릭율":4.3,"date_str":"03/29"}],
+  daily_cat: [{"date":"2026-01-01","category":"ansim","발송건":1137.0,"발송유저":921.0,"클릭건":111.0,"클릭유저":110.0,"대상":1454.0,"클릭율":11.94,"발송율":63.34,"date_str":"01/01"},{"date":"2026-01-01","category":"reco","발송건":39478.0,"발송유저":24612.0,"클릭건":4488.0,"클릭유저":3890.0,"대상":43192.0,"클릭율":15.81,"발송율":57.02,"date_str":"01/01"},{"date":"2026-01-01","category":"schedule","발송건":2198638.0,"발송유저":1809154.0,"클릭건":20354.0,"클릭유저":18529.0,"대상":2167798.0,"클릭율":1.02,"발송율":83.44,"date_str":"01/01"},{"date":"2026-01-01","category":"subs","발송건":56121.0,"발송유저":48032.0,"클릭건":5105.0,"클릭유저":5102.0,"대상":69828.0,"클릭율":10.62,"발송율":68.79,"date_str":"01/01"}],
+  weekly_total: [{"week_label":"12/29주","발송건":5218666.0,"발송유저":3970483.0,"클릭건":116187.0,"클릭유저":106455.0,"대상":5257754.0,"발송율":75.5,"클릭율":2.7},{"week_label":"01/05주","발송건":8432291.0,"발송유저":5926429.0,"클릭건":210147.0,"클릭유저":192494.0,"대상":8196616.0,"발송율":72.3,"클릭율":3.2},{"week_label":"01/12주","발송건":8489417.0,"발송유저":5966494.0,"클릭건":226106.0,"클릭유저":205883.0,"대상":8236579.0,"발송율":72.4,"클릭율":3.5},{"week_label":"01/19주","발송건":8660832.0,"발송유저":6077477.0,"클릭건":231130.0,"클릭유저":210059.0,"대상":8369993.0,"발송율":72.6,"클릭율":3.5},{"week_label":"01/26주","발송건":8673519.0,"발송유저":6095469.0,"클릭건":223848.0,"클릭유저":203727.0,"대상":8402070.0,"발송율":72.5,"클릭율":3.3},{"week_label":"02/02주","발송건":8689563.0,"발송유저":6109840.0,"클릭건":219659.0,"클릭유저":200244.0,"대상":8423179.0,"발송율":72.5,"클릭율":3.3},{"week_label":"02/09주","발송건":9312266.0,"발송유저":6514870.0,"클릭건":232918.0,"클릭유저":213211.0,"대상":8822844.0,"발송율":73.8,"클릭율":3.3},{"week_label":"02/16주","발송건":8481319.0,"발송유저":6019276.0,"클릭건":238223.0,"클릭유저":216832.0,"대상":8243192.0,"발송율":73.0,"클릭율":3.6},{"week_label":"02/23주","발송건":8666182.0,"발송유저":6102287.0,"클릭건":223621.0,"클릭유저":204403.0,"대상":8403595.0,"발송율":72.6,"클릭율":3.3},{"week_label":"03/02주","발송건":8499498.0,"발송유저":6015610.0,"클릭건":219063.0,"클릭유저":200046.0,"대상":8248192.0,"발송율":72.9,"클릭율":3.3},{"week_label":"03/09주","발송건":8410133.0,"발송유저":5946724.0,"클릭건":213282.0,"클릭유저":194552.0,"대상":8140384.0,"발송율":73.1,"클릭율":3.3},{"week_label":"03/16주","발송건":8502262.0,"발송유저":6023963.0,"클릭건":214347.0,"클릭유저":195122.0,"대상":8204022.0,"발송율":73.4,"클릭율":3.2},{"week_label":"03/23주","발송건":8622336.0,"발송유저":6080582.0,"클릭건":205367.0,"클릭유저":187684.0,"대상":8188090.0,"발송율":74.3,"클릭율":3.1}],
+  weekly_cat: [{"week_label":"12/29주","category":"ansim","발송건":3014.0,"발송유저":2434.0,"클릭건":260.0,"클릭유저":254.0,"대상":3703.0,"클릭율":10.43,"발송율":65.73},{"week_label":"12/29주","category":"reco","발송건":196285.0,"발송유저":123174.0,"클릭건":25175.0,"클릭유저":21868.0,"대상":214723.0,"클릭율":17.75,"발송율":57.36},{"week_label":"12/29주","category":"schedule","발송건":4887400.0,"발송유저":3724434.0,"클릭건":71726.0,"클릭유저":65413.0,"대상":4804665.0,"클릭율":1.76,"발송율":77.52},{"week_label":"12/29주","category":"subs","발송건":131967.0,"발송유저":120441.0,"클릭건":19026.0,"클릭유저":18920.0,"대상":234663.0,"클릭율":15.71,"발송율":51.32},{"week_label":"01/05주","category":"ansim","발송건":12780.0,"발송유저":10247.0,"클릭건":1171.0,"클릭유저":1149.0,"대상":15700.0,"클릭율":11.21,"발송율":65.27},{"week_label":"01/05주","category":"reco","발송건":306278.0,"발송유저":192879.0,"클릭건":33702.0,"클릭유저":29316.0,"대상":335499.0,"클릭율":15.20,"발송율":57.49},{"week_label":"01/05주","category":"schedule","발송건":7912009.0,"발송유저":5562783.0,"클릭건":151266.0,"클릭유저":138091.0,"대상":7638568.0,"클릭율":2.48,"발송율":72.83},{"week_label":"01/05주","category":"subs","발송건":201224.0,"발송유저":160520.0,"클릭건":24008.0,"클릭유저":23938.0,"대상":206849.0,"클릭율":14.91,"발송율":77.61},{"week_label":"01/12주","category":"ansim","발송건":14162.0,"발송유저":11340.0,"클릭건":1367.0,"클릭유저":1341.0,"대상":17377.0,"클릭율":11.83,"발송율":65.26},{"week_label":"01/12주","category":"reco","발송건":340785.0,"발송유저":214723.0,"클릭건":38620.0,"클릭유저":33612.0,"대상":372776.0,"클릭율":15.65,"발송율":57.60},{"week_label":"01/12주","category":"schedule","발송건":7941041.0,"발송유저":5582710.0,"클릭건":161022.0,"클릭유저":146834.0,"대상":7658199.0,"클릭율":2.63,"발송율":72.90},{"week_label":"01/12주","category":"subs","발송건":193429.0,"발송유저":157721.0,"클릭건":25097.0,"클릭유저":24096.0,"대상":188227.0,"클릭율":15.28,"발송율":83.79},{"week_label":"01/19주","category":"ansim","발송건":13519.0,"발송유저":10782.0,"클릭건":1284.0,"클릭유저":1261.0,"대상":16551.0,"클릭율":11.70,"발송율":65.14},{"week_label":"01/19주","category":"reco","발송건":352107.0,"발송유저":222153.0,"클릭건":40419.0,"클릭유저":35155.0,"대상":385739.0,"클릭율":15.82,"발송율":57.59},{"week_label":"01/19주","category":"schedule","발송건":8089820.0,"발송유저":5683454.0,"클릭건":163756.0,"클릭유저":149157.0,"대상":7767428.0,"클릭율":2.62,"발송율":73.17},{"week_label":"01/19주","category":"subs","발송건":205386.0,"발송유저":161088.0,"클릭건":25671.0,"클릭유저":24446.0,"대상":200275.0,"클릭율":15.17,"발송율":80.43},{"week_label":"01/26주","category":"ansim","발송건":12592.0,"발송유저":10129.0,"클릭건":1202.0,"클릭유저":1182.0,"대상":15429.0,"클릭율":11.67,"발송율":65.65},{"week_label":"01/26주","category":"reco","발송건":352036.0,"발송유저":221534.0,"클릭건":40050.0,"클릭유저":34794.0,"대상":385519.0,"클릭율":15.71,"발송율":57.47},{"week_label":"01/26주","category":"schedule","발송건":8114779.0,"발송유저":5698065.0,"클릭건":157875.0,"클릭유저":143888.0,"대상":7802009.0,"클릭율":2.53,"발송율":73.03},{"week_label":"01/26주","category":"subs","발송건":194112.0,"발송유저":165741.0,"클릭건":24721.0,"클릭유저":23863.0,"대상":199113.0,"클릭율":14.40,"발송율":83.24},{"week_label":"02/02주","category":"ansim","발송건":13007.0,"발송유저":10404.0,"클릭건":1238.0,"클릭유저":1213.0,"대상":15905.0,"클릭율":11.66,"발송율":65.41},{"week_label":"02/02주","category":"reco","발송건":347696.0,"발송유저":218757.0,"클릭건":39533.0,"클릭유저":34350.0,"대상":381186.0,"클릭율":15.70,"발송율":57.38},{"week_label":"02/02주","category":"schedule","발송건":8131804.0,"발송유저":5720897.0,"클릭건":154432.0,"클릭유저":140726.0,"대상":7831200.0,"클릭율":2.46,"발송율":73.05},{"week_label":"02/02주","category":"subs","발송건":197056.0,"발송유저":159782.0,"클릭건":24456.0,"클릭유저":23955.0,"대상":194888.0,"클릭율":14.99,"발송율":81.99},{"week_label":"02/09주","category":"ansim","발송건":8867.0,"발송유저":7031.0,"클릭건":883.0,"클릭유저":860.0,"대상":10865.0,"클릭율":12.23,"발송율":64.72},{"week_label":"02/09주","category":"reco","발송건":365060.0,"발송유저":229769.0,"클릭건":40837.0,"클릭유저":35544.0,"대상":399773.0,"클릭율":15.47,"발송율":57.50},{"week_label":"02/09주","category":"schedule","발송건":8735038.0,"발송유저":6121406.0,"클릭건":165048.0,"클릭유저":150793.0,"대상":8216019.0,"클릭율":2.46,"발송율":74.51},{"week_label":"02/09주","category":"subs","발송건":203301.0,"발송유저":156664.0,"클릭건":26150.0,"클릭유저":26014.0,"대상":196187.0,"클릭율":16.60,"발송율":79.85},{"week_label":"02/16주","category":"ansim","발송건":8078.0,"발송유저":6418.0,"클릭건":746.0,"클릭유저":724.0,"대상":9899.0,"클릭율":11.28,"발송율":64.83},{"week_label":"02/16주","category":"reco","발송건":326706.0,"발송유저":205768.0,"클릭건":37069.0,"클릭유저":32199.0,"대상":357888.0,"클릭율":15.65,"발송율":57.49},{"week_label":"02/16주","category":"schedule","발송건":7963047.0,"발송유저":5649888.0,"클릭건":175036.0,"클릭유저":158967.0,"대상":7706476.0,"클릭율":2.81,"발송율":73.32},{"week_label":"02/16주","category":"subs","발송건":183488.0,"발송유저":157202.0,"클릭건":25372.0,"클릭유저":25942.0,"대상":168929.0,"클릭율":16.50,"발송율":93.06},{"week_label":"02/23주","category":"ansim","발송건":8108.0,"발송유저":6500.0,"클릭건":747.0,"클릭유저":728.0,"대상":9931.0,"클릭율":11.2,"발송율":65.45},{"week_label":"02/23주","category":"reco","발송건":333988.0,"발송유저":209995.0,"클릭건":37428.0,"클릭유저":32545.0,"대상":365812.0,"클릭율":15.50,"발송율":57.40},{"week_label":"02/23주","category":"schedule","발송건":8137337.0,"발송유저":5735101.0,"클릭건":159905.0,"클릭유저":146194.0,"대상":7843000.0,"클릭율":2.55,"발송율":73.12},{"week_label":"02/23주","category":"subs","발송건":186749.0,"발송유저":150691.0,"클릭건":25541.0,"클릭유저":24936.0,"대상":184852.0,"클릭율":16.55,"발송율":81.52},{"week_label":"03/02주","category":"ansim","발송건":7010.0,"발송유저":5553.0,"클릭건":648.0,"클릭유저":634.0,"대상":8573.0,"클릭율":11.42,"발송율":64.77},{"week_label":"03/02주","category":"reco","발송건":323673.0,"발송유저":203614.0,"클릭건":36379.0,"클릭유저":31649.0,"대상":354368.0,"클릭율":15.54,"발송율":57.46},{"week_label":"03/02주","category":"schedule","발송건":7982553.0,"발송유저":5647773.0,"클릭건":157018.0,"클릭유저":143450.0,"대상":7701432.0,"클릭율":2.54,"발송율":73.33},{"week_label":"03/02주","category":"subs","발송건":186262.0,"발송유저":158670.0,"클릭건":25018.0,"클릭유저":24313.0,"대상":183819.0,"클릭율":15.32,"발송율":86.32},{"week_label":"03/09주","category":"ansim","발송건":7038.0,"발송유저":5590.0,"클릭건":652.0,"클릭유저":636.0,"대상":8621.0,"클릭율":11.38,"발송율":64.84},{"week_label":"03/09주","category":"reco","발송건":314453.0,"발송유저":197736.0,"클릭건":35403.0,"클릭유저":30790.0,"대상":344471.0,"클릭율":15.57,"발송율":57.41},{"week_label":"03/09주","category":"schedule","발송건":7906261.0,"발송유저":5578344.0,"클릭건":152282.0,"클릭유저":138705.0,"대상":7605684.0,"클릭율":2.49,"발송율":73.34},{"week_label":"03/09주","category":"subs","발송건":182381.0,"발송유저":165054.0,"클릭건":24945.0,"클릭유저":24421.0,"대상":181608.0,"클릭율":14.80,"발송율":90.89},{"week_label":"03/16주","category":"ansim","발송건":6509.0,"발송유저":5147.0,"클릭건":607.0,"클릭유저":590.0,"대상":7977.0,"클릭율":11.46,"발송율":64.52},{"week_label":"03/16주","category":"reco","발송건":318979.0,"발송유저":200638.0,"클릭건":35778.0,"클릭유저":31059.0,"대상":348907.0,"클릭율":15.48,"발송율":57.50},{"week_label":"03/16주","category":"schedule","발송건":7995499.0,"발송유저":5659820.0,"클릭건":153113.0,"클릭유저":139413.0,"대상":7666097.0,"클릭율":2.46,"발송율":73.83},{"week_label":"03/16주","category":"subs","발송건":181275.0,"발송유저":158358.0,"클릭건":24849.0,"클릭유저":24060.0,"대상":181041.0,"클릭율":15.19,"발송율":87.47},{"week_label":"03/23주","category":"ansim","발송건":5990.0,"발송유저":4770.0,"클릭건":561.0,"클릭유저":547.0,"대상":7364.0,"클릭율":11.47,"발송율":64.78},{"week_label":"03/23주","category":"reco","발송건":317873.0,"발송유저":200083.0,"클릭건":34998.0,"클릭유저":30450.0,"대상":347828.0,"클릭율":15.22,"발송율":57.52},{"week_label":"03/23주","category":"schedule","발송건":8126736.0,"발송유저":5738143.0,"클릭건":145993.0,"클릭유저":133166.0,"대상":7769026.0,"클릭율":2.32,"발송율":73.86},{"week_label":"03/23주","category":"subs","발송건":171737.0,"발송유저":137586.0,"클릭건":23815.0,"클릭유저":23521.0,"대상":64872.0,"클릭율":17.1,"발송율":212.1}],
+  quarterly_total: [{"month_label":"01월","발송건":38782638.0,"발송유저":27597978.0,"클릭건":976513.0,"클릭유저":890414.0,"대상":37712168.0,"발송율":73.2,"클릭율":3.2},{"month_label":"02월","발송건":35167710.0,"발송유저":24753926.0,"클릭건":916012.0,"클릭유저":836058.0,"대상":33905676.0,"발송율":73.0,"클릭율":3.4},{"month_label":"03월","발송건":34707936.0,"발송유저":24497600.0,"클릭건":881373.0,"클릭유저":804240.0,"대상":33518666.0,"발송율":73.1,"클릭율":3.3}],
+  quarterly_cat: [{"month_label":"01월","category":"ansim","발송건":56053.0,"발송유저":45192.0,"클릭건":5300.0,"클릭유저":5195.0,"대상":69389.0,"클릭율":11.5,"발송율":65.13},{"month_label":"01월","category":"reco","발송건":1519043.0,"발송유저":956926.0,"클릭건":169902.0,"클릭유저":148143.0,"대상":1664643.0,"클릭율":15.48,"발송율":57.49},{"month_label":"01월","category":"schedule","발송건":36317680.0,"발송유저":25832200.0,"클릭건":722884.0,"클릭유저":658723.0,"대상":34853265.0,"클릭율":2.55,"발송율":74.12},{"month_label":"01월","category":"subs","발송건":889862.0,"발송유저":763660.0,"클릭건":78427.0,"클릭유저":78353.0,"대상":1124871.0,"클릭율":10.26,"발송율":67.89},{"month_label":"02월","category":"ansim","발송건":33888.0,"발송유저":26974.0,"클릭건":3090.0,"클릭유저":3023.0,"대상":41582.0,"클릭율":11.21,"발송율":64.87},{"month_label":"02월","category":"reco","발송건":1319512.0,"발송유저":832080.0,"클릭건":146567.0,"클릭유저":127588.0,"대상":1443403.0,"클릭율":15.33,"발송율":57.65},{"month_label":"02월","category":"schedule","발송건":32986437.0,"발송유저":23185755.0,"클릭건":696069.0,"클릭유저":635205.0,"대상":31379874.0,"클릭율":2.74,"발송율":73.89},{"month_label":"02월","category":"subs","발송건":827873.0,"발송유저":709117.0,"클릭건":70286.0,"클릭유저":70242.0,"대상":1040817.0,"클릭율":9.91,"발송율":68.13},{"month_label":"03월","category":"ansim","발송건":25191.0,"발송유저":19810.0,"클릭건":2318.0,"클릭유저":2279.0,"대상":29950.0,"클릭율":11.5,"발송율":66.14},{"month_label":"03월","category":"reco","발송건":1206251.0,"발송유저":750760.0,"클릭건":138548.0,"클릭유저":119866.0,"대상":1297519.0,"클릭율":15.97,"발송율":57.86},{"month_label":"03월","category":"schedule","발송건":32633052.0,"발송유저":23005351.0,"클릭건":669045.0,"클릭유저":610669.0,"대상":31138452.0,"클릭율":2.65,"발송율":73.88},{"month_label":"03월","category":"subs","발송건":843442.0,"발송유저":721679.0,"클릭건":71462.0,"클릭유저":71426.0,"대상":1052745.0,"클릭율":9.9,"발송율":68.55}],
+  cat_summary: [{"category":"ansim","발송건":115132.0,"발송유저":91976.0,"클릭건":10708.0,"클릭유저":10497.0,"대상":140921.0,"발송율":65.3,"클릭율":11.4},{"category":"reco","발송건":4044806.0,"발송유저":2539766.0,"클릭건":455017.0,"클릭유저":395597.0,"대상":4405565.0,"발송율":57.6,"클릭율":15.6},{"category":"schedule","발송건":101937169.0,"발송유저":72023306.0,"클릭건":2087998.0,"클릭유저":1904597.0,"대상":97371591.0,"발송율":74.0,"클릭율":2.6},{"category":"subs","발송건":2561177.0,"발송유저":2194456.0,"클릭건":220175.0,"클릭유저":220021.0,"대상":3218433.0,"발송율":68.2,"클릭율":10.0}]
+};
+
+const CAT_COLORS = { ansim:'#3b82f6', reco:'#f59e0b', schedule:'#10b981', subs:'#a78bfa' };
+const CAT_LABELS = { ansim:'ansim', reco:'reco', schedule:'schedule', subs:'subs' };
+const CAT_FILL = { ansim:'rgba(59,130,246,0.1)', reco:'rgba(245,158,11,0.1)', schedule:'rgba(16,185,129,0.1)', subs:'rgba(167,139,250,0.1)' };
+
+let charts = {};
+let dailyRange = 7;
+
+function fmt(n) {
+  if (!n && n !== 0) return '-';
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e4) return (n/1e3).toFixed(0) + 'K';
+  return n.toLocaleString('ko-KR');
+}
+function fmtN(n) {
+  if (!n && n !== 0) return '-';
+  return n.toLocaleString('ko-KR');
+}
+function fmtPct(n) { return n != null ? n.toFixed(1) + '%' : '-'; }
+
+// ========== TAB SWITCH ==========
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const tabs = ['daily','weekly','quarterly'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'daily') initDaily();
+  if (tab === 'weekly') initWeekly();
+  if (tab === 'quarterly') initQuarterly();
+}
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function chartDefaults() {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      backgroundColor: '#1a2235', borderColor: '#1f2d45', borderWidth: 1,
+      titleColor: '#94a3b8', bodyColor: '#e2e8f0', padding: 10,
+      callbacks: {}
+    }},
+    scales: {
+      x: { grid: { color: 'rgba(31,45,69,0.5)' }, ticks: { color: '#64748b', font: { family: 'DM Mono', size: 10 } } },
+      y: { grid: { color: 'rgba(31,45,69,0.5)' }, ticks: { color: '#64748b', font: { family: 'DM Mono', size: 10 } } }
+    }
+  };
+}
+
+// ========== DAILY ==========
+let dailyInited = false;
+function initDaily() {
+  renderKpiDaily();
+  renderCatDaily();
+  renderDailyCharts();
+  renderTableDaily();
+  dailyInited = true;
+}
+
+function renderKpiDaily() {
+  const total = RAW.daily_total.reduce((a, r) => {
+    a.발송건 += r.발송건||0; a.발송유저 += r.발송유저||0;
+    a.클릭건 += r.클릭건||0; a.클릭유저 += r.클릭유저||0; a.대상 += r.대상||0;
+    return a;
+  }, {발송건:0,발송유저:0,클릭건:0,클릭유저:0,대상:0});
+  total.발송율 = (total.발송유저/total.대상*100).toFixed(1);
+  total.클릭율 = (total.클릭유저/total.발송유저*100).toFixed(1);
+
+  const last = RAW.daily_total[RAW.daily_total.length-1];
+  document.getElementById('kpi-daily').innerHTML = `
+    <div class="kpi-card blue"><div class="kpi-label">1Q 총 발송(건)</div><div class="kpi-val">${fmt(total.발송건)}</div><div class="kpi-sub">최근일 ${fmt(last.발송건)} 건</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">1Q 총 발송(유저)</div><div class="kpi-val">${fmt(total.발송유저)}</div><div class="kpi-sub">최근일 ${fmt(last.발송유저)} 명</div></div>
+    <div class="kpi-card green"><div class="kpi-label">평균 발송율</div><div class="kpi-val">${total.발송율}<span class="kpi-unit">%</span></div><div class="kpi-sub">최근일 ${last.발송율}%</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">평균 클릭율</div><div class="kpi-val">${total.클릭율}<span class="kpi-unit">%</span></div><div class="kpi-sub">최근일 ${last.클릭율}%</div></div>
+  `;
+}
+
+function renderCatDaily() {
+  const cs = RAW.cat_summary;
+  const colors = ['blue','amber','green','purple'];
+  document.getElementById('cat-daily').innerHTML = cs.map((c,i) => `
+    <div class="cat-card">
+      <div class="cat-dot" style="color:${CAT_COLORS[c.category]};background:${CAT_COLORS[c.category]}"></div>
+      <div class="cat-name" style="color:${CAT_COLORS[c.category]}">${c.category.toUpperCase()}</div>
+      <div class="cat-stats">
+        <div class="cat-click" style="color:${CAT_COLORS[c.category]}">${c.클릭율}%</div>
+        <div class="cat-send">발송율 ${c.발송율}%</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setDailyRange(n, btn) {
+  dailyRange = n;
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDailyCharts();
+}
+
+function getDailySlice() {
+  const all = RAW.daily_total;
+  return all.slice(-dailyRange);
+}
+
+function renderDailyCharts() {
+  const slice = getDailySlice();
+  const labels = slice.map(r => r.date_str);
+
+  // By category data for the same date range
+  const dates = slice.map(r => r.date);
+  const cats = ['ansim','reco','schedule','subs'];
+
+  // Build stacked bar for send by cat
+  const catData = {};
+  cats.forEach(c => catData[c] = []);
+  dates.forEach(d => {
+    cats.forEach(c => {
+      const row = RAW.daily_cat.find(r => r.date === d && r.category === c);
+      catData[c].push(row ? Math.round(row.발송유저) : 0);
+    });
+  });
+
+  destroyChart('daily-send');
+  const ctx1 = document.getElementById('chart-daily-send').getContext('2d');
+  const opt1 = {...chartDefaults()};
+  opt1.plugins.tooltip.callbacks.label = (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}명`;
+  opt1.scales.x.stacked = true; opt1.scales.y.stacked = true;
+  opt1.scales.y.ticks = {...opt1.scales.y.ticks, callback: v => fmt(v)};
+  charts['daily-send'] = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: cats.map(c => ({
+        label: c, data: catData[c],
+        backgroundColor: CAT_COLORS[c]+'cc', borderRadius: 2
+      }))
+    },
+    options: opt1
+  });
+
+  // Send rate line
+  destroyChart('daily-sendrate');
+  const ctx2 = document.getElementById('chart-daily-sendrate').getContext('2d');
+  const opt2 = {...chartDefaults()};
+  opt2.plugins.tooltip.callbacks.label = ctx => ` ${ctx.parsed.y}%`;
+  opt2.scales.y.ticks = {...opt2.scales.y.ticks, callback: v => v+'%'};
+  charts['daily-sendrate'] = new Chart(ctx2, {
+    type: 'line',
+    data: { labels, datasets: [{
+      label: '발송율', data: slice.map(r => r.발송율),
+      borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)',
+      fill: true, tension: 0.4, pointRadius: 2, borderWidth: 2
+    }]},
+    options: opt2
+  });
+
+  // Click rate line
+  destroyChart('daily-clickrate');
+  const ctx3 = document.getElementById('chart-daily-clickrate').getContext('2d');
+  const opt3 = {...chartDefaults()};
+  opt3.plugins.tooltip.callbacks.label = ctx => ` ${ctx.parsed.y}%`;
+  opt3.scales.y.ticks = {...opt3.scales.y.ticks, callback: v => v+'%'};
+  charts['daily-clickrate'] = new Chart(ctx3, {
+    type: 'line',
+    data: { labels, datasets: [{
+      label: '클릭율', data: slice.map(r => r.클릭율),
+      borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)',
+      fill: true, tension: 0.4, pointRadius: 2, borderWidth: 2
+    }]},
+    options: opt3
+  });
+
+  renderTableDaily();
+}
+
+function renderTableDaily() {
+  const rows = [...RAW.daily_total].reverse().slice(0,20);
+  const avg발송율 = RAW.daily_total.reduce((s,r)=>s+r.발송율,0)/RAW.daily_total.length;
+  const avg클릭율 = RAW.daily_total.reduce((s,r)=>s+r.클릭율,0)/RAW.daily_total.length;
+  document.getElementById('tbody-daily').innerHTML = rows.map(r => `
+    <tr>
+      <td class="highlight">${r.date_str}</td>
+      <td>${fmt(r.대상)}</td>
+      <td>${fmt(r.발송건)}</td>
+      <td>${fmt(r.발송유저)}</td>
+      <td class="${r.발송율 >= avg발송율 ? 'good' : ''}">${fmtPct(r.발송율)}</td>
+      <td>${fmt(r.클릭건)}</td>
+      <td>${fmt(r.클릭유저)}</td>
+      <td class="${r.클릭율 >= avg클릭율 ? 'good' : 'bad'}">${fmtPct(r.클릭율)}</td>
+    </tr>
+  `).join('');
+}
+
+// ========== WEEKLY ==========
+function initWeekly() {
+  const wt = RAW.weekly_total;
+  const last = wt[wt.length-1];
+  const prev = wt[wt.length-2];
+
+  const totalSend = wt.reduce((s,r)=>s+r.발송건,0);
+  const totalUser = wt.reduce((s,r)=>s+r.발송유저,0);
+  const avgRate = (wt.reduce((s,r)=>s+r.발송율,0)/wt.length).toFixed(1);
+  const avgClick = (wt.reduce((s,r)=>s+r.클릭율,0)/wt.length).toFixed(1);
+
+  document.getElementById('kpi-weekly').innerHTML = `
+    <div class="kpi-card blue"><div class="kpi-label">최근주 발송(건)</div><div class="kpi-val">${fmt(last.발송건)}</div><div class="kpi-sub">전주 ${fmt(prev.발송건)}</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">최근주 발송(유저)</div><div class="kpi-val">${fmt(last.발송유저)}</div><div class="kpi-sub">전주 ${fmt(prev.발송유저)}</div></div>
+    <div class="kpi-card green"><div class="kpi-label">최근주 발송율</div><div class="kpi-val">${last.발송율}<span class="kpi-unit">%</span></div><div class="kpi-sub">주평균 ${avgRate}%</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">최근주 클릭율</div><div class="kpi-val">${last.클릭율}<span class="kpi-unit">%</span></div><div class="kpi-sub">주평균 ${avgClick}%</div></div>
+  `;
+
+  const labels = wt.map(r => r.week_label);
+  const cats = ['ansim','reco','schedule','subs'];
+  const catData = {};
+  cats.forEach(c => catData[c] = []);
+  labels.forEach(wk => {
+    cats.forEach(c => {
+      const row = RAW.weekly_cat.find(r => r.week_label === wk && r.category === c);
+      catData[c].push(row ? Math.round(row.발송유저) : 0);
+    });
+  });
+
+  destroyChart('weekly-send');
+  const opt1 = {...chartDefaults()};
+  opt1.scales.x.stacked = true; opt1.scales.y.stacked = true;
+  opt1.scales.y.ticks = {...opt1.scales.y.ticks, callback: v => fmt(v)};
+  opt1.plugins.tooltip.callbacks.label = ctx => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}`;
+  charts['weekly-send'] = new Chart(document.getElementById('chart-weekly-send').getContext('2d'), {
+    type:'bar', data:{labels, datasets: cats.map(c=>({label:c, data:catData[c], backgroundColor:CAT_COLORS[c]+'cc', borderRadius:2}))},
+    options: opt1
+  });
+
+  destroyChart('weekly-sendrate');
+  const opt2 = {...chartDefaults()};
+  opt2.scales.y.ticks = {...opt2.scales.y.ticks, callback: v => v+'%'};
+  opt2.plugins.tooltip.callbacks.label = ctx => ` ${ctx.parsed.y}%`;
+  charts['weekly-sendrate'] = new Chart(document.getElementById('chart-weekly-sendrate').getContext('2d'), {
+    type:'line', data:{labels, datasets:[{label:'발송율', data:wt.map(r=>r.발송율), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.08)', fill:true, tension:0.4, pointRadius:3, borderWidth:2}]},
+    options: opt2
+  });
+
+  destroyChart('weekly-clickrate');
+  const opt3 = {...chartDefaults()};
+  opt3.scales.y.ticks = {...opt3.scales.y.ticks, callback: v => v+'%'};
+  opt3.plugins.tooltip.callbacks.label = ctx => ` ${ctx.parsed.y}%`;
+  charts['weekly-clickrate'] = new Chart(document.getElementById('chart-weekly-clickrate').getContext('2d'), {
+    type:'line', data:{labels, datasets:[{label:'클릭율', data:wt.map(r=>r.클릭율), borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.08)', fill:true, tension:0.4, pointRadius:3, borderWidth:2}]},
+    options: opt3
+  });
+
+  const avg발송율 = wt.reduce((s,r)=>s+r.발송율,0)/wt.length;
+  const avg클릭율 = wt.reduce((s,r)=>s+r.클릭율,0)/wt.length;
+  document.getElementById('tbody-weekly').innerHTML = [...wt].reverse().map(r => `
+    <tr>
+      <td class="highlight">${r.week_label}</td>
+      <td>${fmt(r.대상)}</td>
+      <td>${fmt(r.발송건)}</td>
+      <td>${fmt(r.발송유저)}</td>
+      <td class="${r.발송율 >= avg발송율 ? 'good' : ''}">${fmtPct(r.발송율)}</td>
+      <td>${fmt(r.클릭건)}</td>
+      <td>${fmt(r.클릭유저)}</td>
+      <td class="${r.클릭율 >= avg클릭율 ? 'good' : 'bad'}">${fmtPct(r.클릭율)}</td>
+    </tr>
+  `).join('');
+}
+
+// ========== QUARTERLY ==========
+function initQuarterly() {
+  const qt = RAW.quarterly_total;
+  const qc = RAW.quarterly_cat;
+  const months = ['01월','02월','03월'];
+
+  document.getElementById('kpi-quarterly').innerHTML = qt.map((r,i) => {
+    const colors = ['blue','amber','green'];
+    const prev = qt[i-1];
+    const chg = prev ? ((r.발송유저/prev.발송유저-1)*100).toFixed(1) : null;
+    return `
+      <div class="kpi-card ${colors[i]}">
+        <div class="kpi-label">${r.month_label} 발송(유저)</div>
+        <div class="kpi-val">${fmt(r.발송유저)}</div>
+        <div class="kpi-sub">발송율 ${r.발송율}% · 클릭율 ${r.클릭율}%${chg ? ` · 전월比 ${chg>0?'+':''}${chg}%` : ''}</div>
+      </div>
+    `;
+  }).join('') + `
+    <div class="kpi-card purple">
+      <div class="kpi-label">1Q 클릭(유저) 합계</div>
+      <div class="kpi-val">${fmt(qt.reduce((s,r)=>s+r.클릭유저,0))}</div>
+      <div class="kpi-sub">평균 클릭율 ${(qt.reduce((s,r)=>s+r.클릭율,0)/qt.length).toFixed(1)}%</div>
+    </div>
+  `;
+
+  const cats = ['ansim','reco','schedule','subs'];
+
+  // Grouped bar: send by cat per month
+  destroyChart('q-send-cat');
+  const opt1 = {...chartDefaults()};
+  opt1.scales.y.ticks = {...opt1.scales.y.ticks, callback: v => fmt(v)};
+  opt1.plugins.tooltip.callbacks.label = ctx => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}`;
+  opt1.plugins.legend = { display: true, labels: { color: '#94a3b8', font: { family: 'DM Mono', size: 10 }, boxWidth: 10, padding: 12 }};
+  charts['q-send-cat'] = new Chart(document.getElementById('chart-q-send-cat').getContext('2d'), {
+    type:'bar',
+    data:{ labels: months, datasets: cats.map(c => ({
+      label: c, data: months.map(m => { const r = qc.find(x=>x.month_label===m&&x.category===c); return r?r.발송건:0; }),
+      backgroundColor: CAT_COLORS[c]+'cc', borderRadius:3
+    }))},
+    options: opt1
+  });
+
+  destroyChart('q-click-cat');
+  const opt2 = {...chartDefaults()};
+  opt2.scales.y.ticks = {...opt2.scales.y.ticks, callback: v => fmt(v)};
+  opt2.plugins.tooltip.callbacks.label = ctx => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}`;
+  opt2.plugins.legend = { display: true, labels: { color: '#94a3b8', font: { family: 'DM Mono', size: 10 }, boxWidth: 10, padding: 12 }};
+  charts['q-click-cat'] = new Chart(document.getElementById('chart-q-click-cat').getContext('2d'), {
+    type:'bar',
+    data:{ labels: months, datasets: cats.map(c => ({
+      label: c, data: months.map(m => { const r = qc.find(x=>x.month_label===m&&x.category===c); return r?r.클릭유저:0; }),
+      backgroundColor: CAT_COLORS[c]+'cc', borderRadius:3
+    }))},
+    options: opt2
+  });
+
+  // Pie: send share by cat
+  const catTotal = cats.map(c => qc.filter(r=>r.category===c).reduce((s,r)=>s+r.발송건,0));
+  destroyChart('q-pie-send');
+  const opt3 = {...chartDefaults()};
+  opt3.scales = {};
+  opt3.plugins.legend = { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { family: 'DM Mono', size: 10 }, boxWidth: 10, padding: 10 }};
+  opt3.plugins.tooltip.callbacks.label = ctx => ` ${ctx.label}: ${fmt(ctx.raw)} (${(ctx.parsed*100/catTotal.reduce((a,b)=>a+b,0)).toFixed(1)}%)`;
+  charts['q-pie-send'] = new Chart(document.getElementById('chart-q-pie-send').getContext('2d'), {
+    type:'doughnut',
+    data:{ labels: cats, datasets:[{ data: catTotal, backgroundColor: cats.map(c=>CAT_COLORS[c]+'cc'), borderWidth:0, hoverOffset:6 }]},
+    options: opt3
+  });
+
+  // Send rate bar by month
+  destroyChart('q-sendrate');
+  const opt4 = {...chartDefaults()};
+  opt4.scales.y.min = 60; opt4.scales.y.max = 80;
+  opt4.scales.y.ticks = {...opt4.scales.y.ticks, callback: v => v+'%'};
+  opt4.plugins.tooltip.callbacks.label = ctx => ` ${ctx.parsed.y}%`;
+  charts['q-sendrate'] = new Chart(document.getElementById('chart-q-sendrate').getContext('2d'), {
+    type:'bar',
+    data:{ labels: months, datasets:[{
+      label:'발송율', data: qt.map(r=>r.발송율),
+      backgroundColor: ['#3b82f6cc','#f59e0bcc','#10b981cc'], borderRadius:6
+    }]},
+    options: opt4
+  });
+
+  // Click rate by cat (horizontal bar)
+  const catAvgClick = cats.map(c => {
+    const rows = qc.filter(r=>r.category===c);
+    return (rows.reduce((s,r)=>s+r.클릭율,0)/rows.length).toFixed(1)*1;
+  });
+  destroyChart('q-clickrate-cat');
+  const opt5 = {...chartDefaults()};
+  opt5.indexAxis = 'y';
+  opt5.scales.x = { grid:{color:'rgba(31,45,69,0.5)'}, ticks:{color:'#64748b', font:{family:'DM Mono',size:10}, callback:v=>v+'%'} };
+  opt5.scales.y = { grid:{display:false}, ticks:{color:'#94a3b8', font:{family:'DM Mono',size:11}} };
+  opt5.plugins.tooltip.callbacks.label = ctx => ` 클릭율: ${ctx.parsed.x}%`;
+  charts['q-clickrate-cat'] = new Chart(document.getElementById('chart-q-clickrate-cat').getContext('2d'), {
+    type:'bar',
+    data:{ labels: cats, datasets:[{
+      data: catAvgClick,
+      backgroundColor: cats.map(c=>CAT_COLORS[c]+'cc'), borderRadius:4
+    }]},
+    options: opt5
+  });
+
+  // Tables
+  document.getElementById('tbody-quarterly').innerHTML = qt.map(r => `
+    <tr>
+      <td class="highlight">${r.month_label}</td>
+      <td>${fmt(r.대상)}</td>
+      <td>${fmt(r.발송건)}</td>
+      <td class="good">${fmtPct(r.발송율)}</td>
+      <td>${fmt(r.클릭유저)}</td>
+      <td class="good">${fmtPct(r.클릭율)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('tbody-quarterly-cat').innerHTML = qc.map(r => `
+    <tr>
+      <td class="highlight">${r.month_label}</td>
+      <td style="color:${CAT_COLORS[r.category]};font-weight:700">${r.category}</td>
+      <td>${fmt(r.발송유저)}</td>
+      <td class="good">${r.클릭율}%</td>
+      <td>${r.발송율}%</td>
+    </tr>
+  `).join('');
+}
+
+// ========== INIT ==========
+window.addEventListener('DOMContentLoaded', () => {
+  initDaily();
+});
+</script>
+</body>
+</html>
